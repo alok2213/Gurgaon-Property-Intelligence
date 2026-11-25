@@ -2,7 +2,7 @@
 
 An end-to-end data science project on the Gurgaon real-estate market, delivered as a Flask web app. It estimates property prices with machine learning, lets you explore market trends through interactive charts, and recommends similar apartments.
 
-![Screenshot](docs/screenshot.png)
+![Screenshot](docs/image.png)
 
 ## Overview
 
