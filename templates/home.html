@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Gurgaon Property Intelligence{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <h1>What is that Gurgaon home really worth?</h1>
+    <p class="lead">Price a flat or house from {{ '{:,}'.format(meta.rows) }} real listings, compare sectors on a map, and find apartments similar to the one you like.</p>
+    <div class="btn-row">
+      <a class="btn" href="{{ url_for('predict_page') }}">Estimate a price</a>
+      <a class="btn ghost" href="{{ url_for('analytics_page') }}">Explore the market</a>
+    </div>
+  </div>
+
+  <form class="quick" action="{{ url_for('predict_page') }}" method="get" aria-labelledby="quickTitle">
+    <h2 id="quickTitle">Quick estimate</h2>
+    <div class="fields">
+      <div class="field full">
+        <span class="label">Property type</span>
+        <div class="seg" role="radiogroup" aria-label="Property type">
+          <input type="radio" name="property_type" id="q-flat" value="flat" checked><label for="q-flat">Flat</label>
+          <input type="radio" name="property_type" id="q-house" value="house"><label for="q-house">House</label>
+        </div>
+      </div>
+      <div class="field full">
+        <label for="q-sector">Sector or area</label>
+        <select id="q-sector" name="sector" required>
+          <option value="" disabled selected>Choose a sector</option>
+          {% for s in opts.sectors %}<option value="{{ s.value }}">{{ s.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="q-bhk">Bedrooms</label>
+        <select id="q-bhk" name="bedRoom">
+          {% for n in range(1, 8) %}<option value="{{ n }}" {{ 'selected' if n == 3 }}>{{ n }} BHK</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="q-area">Built-up area (sq.ft.)</label>
+        <input id="q-area" name="built_up_area" type="number" min="100" max="15000" value="1500" required>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn" type="submit">Continue with details</button></div>
+  </form>
+</section>
+
+<section class="stats" aria-label="Dataset summary">
+  <div class="stat"><div class="v">{{ '{:,}'.format(summary.listings) }}</div><div class="l">Listings analysed</div></div>
+  <div class="stat"><div class="v">{{ summary.sectors }}</div><div class="l">Sectors &amp; areas on the map</div></div>
+  <div class="stat"><div class="v">{{ summary.median_price }}<small>Cr</small></div><div class="l">Median price</div></div>
+  <div class="stat"><div class="v">{{ '{:,}'.format(summary.avg_ppsf) }}</div><div class="l">Average ₹ per sq.ft.</div></div>
+  <div class="stat"><div class="v">{{ (meta.r2 * 100)|round(0)|int }}%</div><div class="l">Model fit (R² on unseen data)</div></div>
+</section>
+
+<section class="grid two" style="margin-top:22px">
+  <div class="panel">
+    <h2>Most expensive sectors</h2>
+    <p class="panel-sub">Average price per sq.ft., sectors with at least 8 listings.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Sector</th><th>₹ / sq.ft.</th><th class="r">Avg price</th><th class="r">Listings</th></tr></thead>
+        <tbody>
+        {% set mx = top[0].ppsf %}
+        {% for t in top %}
+          <tr>
+            <td>{{ t.sector }}</td>
+            <td class="num" style="min-width:150px">{{ '{:,}'.format(t.ppsf) }}
+              <span class="inline-bar" style="margin-top:4px"><span style="width:{{ (t.ppsf / mx * 100)|round|int }}%"></span></span></td>
+            <td class="r num">{{ t.price }} Cr</td>
+            <td class="r num">{{ t.n }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>What you can do here</h2>
+    <p class="panel-sub">Four tools built on the same data.</p>
+    <div class="stack" style="gap:0">
+      <a class="item" href="{{ url_for('predict_page') }}" style="color:inherit;text-decoration:none">
+        <div><h4>Price estimator</h4><p class="sub">Get a price and a likely range for any flat or house, with similar listings.</p></div>
+      </a>
+      <a class="item" href="{{ url_for('analytics_page') }}" style="color:inherit;text-decoration:none">
+        <div><h4>Market analytics</h4><p class="sub">Sector map, price ranges by BHK, flat vs house, and the amenities buyers see most.</p></div>
+      </a>
+      <a class="item" href="{{ url_for('recommender_page') }}" style="color:inherit;text-decoration:none">
+        <div><h4>Find apartments</h4><p class="sub">Search by distance from a landmark, or get societies similar to one you like.</p></div>
+      </a>
+      <a class="item" href="{{ url_for('insights_page') }}" style="color:inherit;text-decoration:none">
+        <div><h4>Price drivers</h4><p class="sub">See how much a bedroom, a servant room or a bigger plan changes the price.</p></div>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Market analytics · Gurgaon Property Intelligence{% endblock %}
+{% block head %}<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Market analytics</h1>
+  <p>See where prices sit across Gurgaon, then narrow down to a single sector.</p>
+</div>
+
+<div class="panel" style="margin-bottom:18px">
+  <h2>Sector map</h2>
+  <p class="panel-sub">Colour shows average price per sq.ft.; bubble size shows average built-up area. Hover for details.</p>
+  <div id="mapChart" class="chart tall"><div class="skeleton" style="height:100%"></div></div>
+</div>
+
+<div class="filter-bar">
+  <div class="field">
+    <label for="sectorFilter">Focus on a sector</label>
+    <select id="sectorFilter">
+      <option value="overall">All Gurgaon</option>
+      {% for s in sectors %}<option value="{{ s.value }}">{{ s.label }}</option>{% endfor %}
+    </select>
+  </div>
+  <p class="muted small" id="filterNote" style="padding-bottom:10px"></p>
+</div>
+
+<div class="stats" id="kpis" style="margin-bottom:18px"></div>
+
+<div class="grid two">
+  <div class="panel"><h2>Area vs price</h2><p class="panel-sub">Each dot is one listing, grouped by bedrooms.</p><div id="scatterChart" class="chart"></div></div>
+  <div class="panel"><h2>Price range by BHK</h2><p class="panel-sub">Middle half of prices sits inside each box (up to 4 BHK).</p><div id="boxChart" class="chart"></div></div>
+  <div class="panel"><h2>Flats vs houses</h2><p class="panel-sub">How listing prices are distributed (top 1% trimmed).</p><div id="distChart" class="chart"></div></div>
+  <div class="panel"><h2>Bedroom mix</h2><p class="panel-sub">Share of listings by number of bedrooms.</p><div id="pieChart" class="chart"></div></div>
+</div>
+
+<div class="grid two" style="margin-top:18px">
+  <div class="panel"><h2>Priciest sectors per sq.ft.</h2><p class="panel-sub">Top 15 sectors by average ₹ per sq.ft.</p><div id="topChart" class="chart tall"></div></div>
+  <div class="panel"><h2>Amenities buyers see most</h2><p class="panel-sub">Larger text means the feature appears in more listings.</p><div id="cloud" class="cloud"></div></div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>{% endblock %}

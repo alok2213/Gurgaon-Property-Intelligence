@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Find apartments · Gurgaon Property Intelligence{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Find apartments</h1>
+  <p>Search societies by distance from a landmark, or pick one you like and see the most similar ones.</p>
+</div>
+
+<div class="tabs" role="tablist">
+  <button class="tab" role="tab" id="tab-loc" aria-selected="true" aria-controls="pane-loc">Search by location</button>
+  <button class="tab" role="tab" id="tab-sim" aria-selected="false" aria-controls="pane-sim">Similar apartments</button>
+</div>
+
+<section id="pane-loc" role="tabpanel" aria-labelledby="tab-loc">
+  <div class="panel">
+    <div class="fields" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto;align-items:end">
+      <div class="field">
+        <label for="locInput">Landmark, hospital, metro or road</label>
+        <input id="locInput" type="search" list="locList" placeholder="Type to search, e.g. Dwarka Expy" autocomplete="off">
+        <datalist id="locList">{% for l in locations %}<option value="{{ l }}">{% endfor %}</datalist>
+      </div>
+      <div class="field">
+        <label for="radius">Within <b id="radiusVal">5</b> km</label>
+        <input id="radius" type="range" min="1" max="30" step="1" value="5">
+      </div>
+      <button class="btn" id="locBtn" type="button">Search</button>
+    </div>
+    <div id="locErr" class="errors" role="alert" hidden></div>
+  </div>
+  <div class="panel" style="margin-top:18px" id="locPanel" hidden>
+    <h2 id="locTitle"></h2>
+    <div class="results" id="locResults"></div>
+  </div>
+</section>
+
+<section id="pane-sim" role="tabpanel" aria-labelledby="tab-sim" hidden>
+  <div class="panel">
+    <div class="fields" style="grid-template-columns:minmax(0,1fr) auto;align-items:end">
+      <div class="field">
+        <label for="aptInput">Apartment or society</label>
+        <input id="aptInput" type="search" list="aptList" placeholder="Type to search, e.g. M3M Golf Hills" autocomplete="off">
+        <datalist id="aptList">{% for n in names %}<option value="{{ n }}">{% endfor %}</datalist>
+      </div>
+      <button class="btn" id="simBtn" type="button">Show similar</button>
+    </div>
+    <div id="simErr" class="errors" role="alert" hidden></div>
+  </div>
+
+  <div id="simOut" hidden>
+    <div class="panel" style="margin-top:18px" id="detailPanel"></div>
+    <div class="panel" style="margin-top:18px">
+      <h2>Similar apartments</h2>
+      <p class="panel-sub">Ranked by shared facilities, configurations and prices, and nearby places.</p>
+      <div class="results" id="simResults"></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/recommender.js') }}"></script>{% endblock %}

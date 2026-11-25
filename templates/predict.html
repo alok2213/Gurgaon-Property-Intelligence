@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Price estimator · Gurgaon Property Intelligence{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Price estimator</h1>
+  <p>Describe the property and get an estimated price in crores, a likely range, and similar listings from the same area.</p>
+</div>
+
+<div class="grid predict-layout" style="grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start">
+  <form class="panel" id="predictForm" novalidate>
+    <div class="form-section">
+      <h3>Property</h3>
+      <div class="fields">
+        <div class="field full">
+          <span class="label">Property type</span>
+          <div class="seg" role="radiogroup" aria-label="Property type">
+            <input type="radio" name="property_type" id="pt-flat" value="flat" checked><label for="pt-flat">Flat</label>
+            <input type="radio" name="property_type" id="pt-house" value="house"><label for="pt-house">Independent house</label>
+          </div>
+        </div>
+        <div class="field full">
+          <label for="sector">Sector or area</label>
+          <select id="sector" name="sector" required>
+            <option value="" disabled selected>Choose a sector</option>
+            {% for s in opts.sectors %}<option value="{{ s.value }}">{{ s.label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="built_up_area">Built-up area (sq.ft.)</label>
+          <input id="built_up_area" name="built_up_area" type="number" min="100" max="15000" step="1" value="1500" required>
+          <span class="hint">Super built-up area as listed.</span>
+        </div>
+        <div class="field">
+          <label for="agePossession">Age of property</label>
+          <select id="agePossession" name="agePossession">
+            {% for a in opts.age %}<option value="{{ a }}" {{ 'selected' if a == 'Relatively New' }}>{{ a }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Rooms</h3>
+      <div class="fields">
+        <div class="field">
+          <label for="bedRoom">Bedrooms</label>
+          <select id="bedRoom" name="bedRoom">
+            {% for n in range(1, 11) %}<option value="{{ n }}" {{ 'selected' if n == 3 }}>{{ n }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="bathroom">Bathrooms</label>
+          <select id="bathroom" name="bathroom">
+            {% for n in range(1, 11) %}<option value="{{ n }}" {{ 'selected' if n == 3 }}>{{ n }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="balcony">Balconies</label>
+          <select id="balcony" name="balcony">
+            {% for b in opts.balcony %}<option value="{{ b }}" {{ 'selected' if b == '2' }}>{{ b }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="floor_category">Floor</label>
+          <select id="floor_category" name="floor_category">
+            <option value="Low Floor">Low floor (0–2)</option>
+            <option value="Mid Floor" selected>Mid floor (3–10)</option>
+            <option value="High Floor">High floor (11+)</option>
+          </select>
+        </div>
+        <label class="check"><input type="checkbox" name="servant_room" value="1"> Servant room</label>
+        <label class="check"><input type="checkbox" name="store_room" value="1"> Store room</label>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Condition and amenities</h3>
+      <div class="fields">
+        <div class="field full">
+          <span class="label">Furnishing</span>
+          <div class="seg" role="radiogroup" aria-label="Furnishing">
+            <input type="radio" name="furnishing_type" id="fu-0" value="unfurnished" checked><label for="fu-0">Unfurnished</label>
+            <input type="radio" name="furnishing_type" id="fu-1" value="semifurnished"><label for="fu-1">Semi-furnished</label>
+            <input type="radio" name="furnishing_type" id="fu-2" value="furnished"><label for="fu-2">Furnished</label>
+          </div>
+        </div>
+        <div class="field full">
+          <span class="label">Society amenities</span>
+          <div class="seg" role="radiogroup" aria-label="Society amenities level">
+            <input type="radio" name="luxury_category" id="lx-0" value="Low"><label for="lx-0">Basic</label>
+            <input type="radio" name="luxury_category" id="lx-1" value="Medium" checked><label for="lx-1">Standard</label>
+            <input type="radio" name="luxury_category" id="lx-2" value="High"><label for="lx-2">Premium</label>
+          </div>
+          <span class="hint">Premium means clubhouse, pool, gym, concierge and similar facilities.</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="formErrors" class="errors" role="alert" hidden></div>
+    <div class="btn-row">
+      <button class="btn" type="submit" id="submitBtn">Estimate price</button>
+      <button class="btn ghost" type="reset" id="resetBtn">Reset</button>
+    </div>
+  </form>
+
+  <div class="result-wrap">
+    <div class="panel" id="resultPanel" aria-live="polite">
+      <div class="empty" id="emptyState">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+        <h3>Your estimate will appear here</h3>
+        <p>Pick a sector, enter the built-up area and select <b>Estimate price</b>.</p>
+      </div>
+      <div id="resultBody" hidden>
+        <div class="price-label">Estimated price</div>
+        <div class="price-big"><span id="rPrice">0</span><span class="u">Cr</span></div>
+        <div class="muted" id="rWords"></div>
+
+        <div class="range" aria-label="Likely price range">
+          <div class="range-track"><div class="range-fill" id="rFill"></div><div class="range-mark" id="rMark"></div></div>
+          <div class="range-labels"><span id="rLow"></span><span>Likely range</span><span id="rHigh"></span></div>
+        </div>
+
+        <div class="kv">
+          <div><b id="rPpsf">-</b><span>₹ per sq.ft.</span></div>
+          <div><b id="rMae">-</b><span>Typical model error (Cr)</span></div>
+        </div>
+
+        <h3 class="subhead">Similar listings</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Area</th><th>BHK</th><th class="r">Sq.ft.</th><th class="r">Price</th></tr></thead>
+            <tbody id="rComps"></tbody>
+          </table>
+        </div>
+        <p class="note">The range covers where most of the model's decision trees land. Actual prices vary with negotiation, view, exact floor and builder.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/predict.js') }}"></script>{% endblock %}

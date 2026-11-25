@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Price drivers · Gurgaon Property Intelligence{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>What drives property prices</h1>
+  <p>A linear model trained on {{ '{:,}'.format(ins.n) }} listings shows how much each feature moves the price when everything else stays the same.</p>
+</div>
+
+<div class="stats" style="margin-bottom:18px">
+  <div class="stat"><div class="v">{{ (ins.cv_r2 * 100)|round(0)|int }}%</div><div class="l">Variation explained (10-fold cross-validation)</div></div>
+  <div class="stat"><div class="v">{{ ins.features|length }}</div><div class="l">Features measured</div></div>
+  <div class="stat"><div class="v">{{ ins.features[0].label }}</div><div class="l">Strongest single driver</div></div>
+</div>
+
+<div class="panel">
+  <h2>Effect on price</h2>
+  <p class="panel-sub">Percentage change in price for the change described under each feature. Bars are scaled by how strongly the feature matters across all listings.</p>
+  {% set mx = (ins.features | map(attribute='std_coef') | map('abs') | max) or 1 %}
+  {% for f in ins.features %}
+    <div class="effect">
+      <div class="nm"><b>{{ f.label }}</b><span>{{ f.unit }}</span></div>
+      <div class="track" aria-hidden="true">
+        {% set w = (f.std_coef|abs / mx * 50)|round(1) %}
+        <i class="{{ 'pos' if f.std_coef >= 0 else 'neg' }}" style="width:{{ w }}%"></i>
+      </div>
+      <div class="val" style="color:{{ 'var(--good)' if f.pct_per_unit >= 0 else 'var(--bad)' }}">{{ '+' if f.pct_per_unit >= 0 }}{{ f.pct_per_unit }}%</div>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="grid two" style="margin-top:18px">
+  <div class="panel">
+    <h2>How to read this</h2>
+    <p class="muted" style="margin-top:8px">Each row isolates one feature. For example, a house is priced noticeably above a flat of the same size, sector and age. Percentages describe typical effects across Gurgaon, not a promise for any single property.</p>
+  </div>
+  <div class="panel">
+    <h2>What is not shown</h2>
+    <p class="muted" style="margin-top:8px">Location is the biggest driver of all, but it is spread across more than 100 sector values, so it is covered on the <a href="{{ url_for('analytics_page') }}">Market analytics</a> page instead.</p>
+  </div>
+</div>
+{% endblock %}

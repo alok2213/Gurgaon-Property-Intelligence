@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}How it works · Gurgaon Property Intelligence{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>How it works</h1>
+  <p>The app is the last step of an end-to-end data science project, from raw listings to a working tool.</p>
+</div>
+
+<div class="grid two" style="align-items:start">
+  <div class="panel">
+    <h2>Project pipeline</h2>
+    <p class="panel-sub">Eleven stages, in the order they were built.</p>
+    <ol class="steps">
+      {% for title, text in steps %}<li><div><b>{{ title }}</b><span>{{ text }}</span></div></li>{% endfor %}
+    </ol>
+  </div>
+
+  <div class="stack">
+    <div class="panel">
+      <h2>Price model</h2>
+      <div class="kv">
+        <div><b>{{ (meta.r2 * 100)|round(1) }}%</b><span>R² on held-out data</span></div>
+        <div><b>{{ meta.mae_cr }} Cr</b><span>Mean absolute error</span></div>
+      </div>
+      <p class="muted" style="margin-top:14px">Random Forest with 500 trees on log-transformed price. Trained {{ meta.trained_at }} on {{ '{:,}'.format(meta.rows) }} listings.</p>
+    </div>
+    <div class="panel">
+      <h2>Run it locally</h2>
+<pre class="code">pip install -r requirements.txt
+python app.py
+# open http://localhost:5000</pre>
+      <p class="muted" style="margin-top:12px">To retrain after changing the data, run <code>python train.py</code>.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
